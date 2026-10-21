@@ -15,6 +15,7 @@ import { Header } from './components/Header';
 import { OverviewSection } from './components/OverviewSection';
 import { BorrowHistorySection } from './components/BorrowHistorySection';
 import { InventorySection } from './components/InventorySection';
+import { VillageSummarySection } from './components/VillageSummarySection';
 import { LoanModal } from './components/LoanModal';
 import { ReturnModal } from './components/ReturnModal';
 import { AddEquipmentModal } from './components/AddEquipmentModal';
@@ -22,6 +23,7 @@ import { AddUnitModal } from './components/AddUnitModal';
 import { EditEquipmentModal } from './components/EditEquipmentModal';
 import { EditUnitModal } from './components/EditUnitModal';
 import { PrintLoanSlipModal } from './components/PrintLoanSlipModal';
+import { PrintBorrowerRosterModal } from './components/PrintBorrowerRosterModal';
 import { testConnection } from './firebase';
 import { 
   seedInitialDataIfEmpty,
@@ -43,8 +45,8 @@ import {
 import { Stethoscope, CheckCircle2, Globe, Cloud, RefreshCw } from 'lucide-react';
 
 export default function App() {
-  // Primary Tabs: 'overview' (ภาพรวม / สถานะ), 'history' (ประวัติการยืม), 'inventory' (คลัง)
-  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'inventory'>('overview');
+  // Primary Tabs: 'overview' (ภาพรวม / สถานะ), 'villages' (สรุปรายหมู่บ้าน), 'history' (ประวัติการยืม), 'inventory' (คลัง)
+  const [activeTab, setActiveTab] = useState<'overview' | 'villages' | 'history' | 'inventory'>('overview');
 
   // Filter states navigated from status cards
   const [inventoryFilter, setInventoryFilter] = useState<'all' | 'available' | 'borrowed' | 'repair'>('all');
@@ -61,9 +63,11 @@ export default function App() {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [preSelectedEqId, setPreSelectedEqId] = useState<string | undefined>(undefined);
   const [preSelectedUnitId, setPreSelectedUnitId] = useState<string | undefined>(undefined);
+  const [preSelectedVillage, setPreSelectedVillage] = useState<string | undefined>(undefined);
 
   const [selectedRecordForReturn, setSelectedRecordForReturn] = useState<BorrowRecord | null>(null);
   const [selectedRecordForPrint, setSelectedRecordForPrint] = useState<BorrowRecord | null>(null);
+  const [isPrintRosterOpen, setIsPrintRosterOpen] = useState(false);
   const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
   const [equipmentForAddUnit, setEquipmentForAddUnit] = useState<Equipment | null>(null);
   const [equipmentForEdit, setEquipmentForEdit] = useState<Equipment | null>(null);
@@ -381,6 +385,7 @@ export default function App() {
         onOpenNewLoan={() => {
           setPreSelectedEqId(undefined);
           setPreSelectedUnitId(undefined);
+          setPreSelectedVillage(undefined);
           setIsLoanModalOpen(true);
         }}
         activeLoanCount={activeLoans.length}
@@ -398,11 +403,30 @@ export default function App() {
             onOpenNewLoan={() => {
               setPreSelectedEqId(undefined);
               setPreSelectedUnitId(undefined);
+              setPreSelectedVillage(undefined);
               setIsLoanModalOpen(true);
             }}
             onViewAllLoans={() => setActiveTab('history')}
             onViewInventory={() => setActiveTab('inventory')}
+            onViewVillages={() => setActiveTab('villages')}
+            onOpenPrintRoster={() => setIsPrintRosterOpen(true)}
             onSelectStatusCard={handleSelectStatusCard}
+          />
+        )}
+
+        {/* New Page: สรุปข้อมูลรายหมู่บ้าน (ตำบลธาตุทอง) */}
+        {activeTab === 'villages' && (
+          <VillageSummarySection
+            borrowRecords={borrowRecords}
+            equipments={equipments}
+            onOpenReturnModal={(record) => setSelectedRecordForReturn(record)}
+            onOpenPrintModal={(record) => setSelectedRecordForPrint(record)}
+            onOpenNewLoan={(vName) => {
+              setPreSelectedEqId(undefined);
+              setPreSelectedUnitId(undefined);
+              setPreSelectedVillage(vName);
+              setIsLoanModalOpen(true);
+            }}
           />
         )}
 
@@ -414,6 +438,7 @@ export default function App() {
             onOpenNewLoan={() => {
               setPreSelectedEqId(undefined);
               setPreSelectedUnitId(undefined);
+              setPreSelectedVillage(undefined);
               setIsLoanModalOpen(true);
             }}
             initialStatusFilter={historyFilter}
@@ -469,6 +494,7 @@ export default function App() {
         equipments={equipments}
         preSelectedEquipmentId={preSelectedEqId}
         preSelectedUnitId={preSelectedUnitId}
+        preSelectedVillage={preSelectedVillage}
         onConfirmLoan={handleConfirmLoan}
       />
 
@@ -514,6 +540,13 @@ export default function App() {
       <PrintLoanSlipModal
         record={selectedRecordForPrint}
         onClose={() => setSelectedRecordForPrint(null)}
+      />
+
+      {/* Modal: Print Borrower Roster (พิมพ์ใบรายชื่อผู้ยืม) */}
+      <PrintBorrowerRosterModal
+        isOpen={isPrintRosterOpen}
+        onClose={() => setIsPrintRosterOpen(false)}
+        borrowRecords={borrowRecords}
       />
     </div>
   );

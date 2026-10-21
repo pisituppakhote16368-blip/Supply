@@ -30,6 +30,7 @@ export interface BorrowRecord {
   patientIdCard: string; // เลขประจำตัวประชาชน
   patientPhone: string; // เบอร์โทรศัพท์
   patientAddress: string; // ที่อยู่
+  village?: string; // หมู่บ้าน เช่น หมู่ 1 บ้านธาตุทอง, หมู่ 2 บ้านหินโงม
   patientPhoto: string; // รูปถ่ายผู้ป่วย/ผู้ยืม
   equipmentId: string;
   equipmentName: string;

@@ -10,7 +10,8 @@ import {
   ArrowUpRight,
   CalendarDays,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Printer
 } from 'lucide-react';
 import { Equipment, BorrowRecord, QuotaPolicy } from '../types';
 import { calculateOverdueInfo, formatThaiDate } from '../utils/dateUtils';
@@ -23,6 +24,8 @@ interface OverviewSectionProps {
   onOpenNewLoan: () => void;
   onViewAllLoans: () => void;
   onViewInventory: () => void;
+  onViewVillages?: () => void;
+  onOpenPrintRoster?: () => void;
   onSelectStatusCard: (status: 'all' | 'available' | 'borrowed' | 'repair') => void;
 }
 
@@ -34,6 +37,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   onOpenNewLoan,
   onViewAllLoans,
   onViewInventory,
+  onViewVillages,
+  onOpenPrintRoster,
   onSelectStatusCard,
 }) => {
   // Aggregate KPIs safely
@@ -254,14 +259,25 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                 รายชื่อผู้ป่วยที่กำลังใช้งานอุปกรณ์และกำหนดส่งคืน
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onViewAllLoans}
-              className="text-xs font-medium text-sky-700 hover:text-sky-900 flex items-center gap-1 cursor-pointer"
-            >
-              <span>ดูประวัติทั้งหมด</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenPrintRoster}
+                className="text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 px-3 py-1.5 rounded-lg border border-sky-200 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs hover:shadow-xs"
+                title="พิมพ์ใบรายชื่อผู้ยืมกายอุปกรณ์ทางการแพทย์"
+              >
+                <Printer className="w-3.5 h-3.5 text-sky-600" />
+                <span>พิมพ์ใบรายชื่อผู้ยืม</span>
+              </button>
+              <button
+                type="button"
+                onClick={onViewAllLoans}
+                className="text-xs font-medium text-sky-700 hover:text-sky-900 flex items-center gap-1 cursor-pointer"
+              >
+                <span>ดูประวัติทั้งหมด</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {activeLoans.length === 0 ? (

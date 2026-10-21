@@ -3,6 +3,7 @@ import { X, PlusCircle, Calendar, User, Phone, MapPin, Tag, Camera, Check } from
 import { Equipment, EquipmentUnit, BorrowRecord } from '../types';
 import { getTodayString, addDays, formatThaiDate } from '../utils/dateUtils';
 import { ImagePicker } from './ImagePicker';
+import { THAT_THONG_VILLAGES, OTHER_VILLAGE, identifyVillage } from '../utils/villageUtils';
 
 interface LoanModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface LoanModalProps {
   equipments: Equipment[];
   preSelectedEquipmentId?: string;
   preSelectedUnitId?: string;
+  preSelectedVillage?: string;
   onConfirmLoan: (record: Omit<BorrowRecord, 'id'>) => void;
 }
 
@@ -38,9 +40,24 @@ export const LoanModal: React.FC<LoanModalProps> = ({
   equipments,
   preSelectedEquipmentId,
   preSelectedUnitId,
+  preSelectedVillage,
   onConfirmLoan,
 }) => {
   if (!isOpen) return null;
+
+  // Selected Village
+  const [selectedVillage, setSelectedVillage] = useState<string>(
+    preSelectedVillage || THAT_THONG_VILLAGES[0].name
+  );
+
+  useEffect(() => {
+    if (preSelectedVillage) {
+      setSelectedVillage(preSelectedVillage);
+      if (!patientAddress || patientAddress.includes('ต.ธาตุทอง')) {
+        setPatientAddress(`${preSelectedVillage} ต.ธาตุทอง อ.สว่างแดนดิน จ.สกลนคร`);
+      }
+    }
+  }, [preSelectedVillage]);
 
   // Selected Equipment
   const [selectedEqId, setSelectedEqId] = useState<string>(
@@ -118,6 +135,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
       patientIdCard: patientIdCard.trim() || '-',
       patientPhone: patientPhone.trim(),
       patientAddress: patientAddress.trim(),
+      village: selectedVillage,
       patientPhoto: patientPhoto || PRESET_PATIENT_AVATARS[0].url,
       equipmentId: currentEquipment.id,
       equipmentName: currentEquipment.name,
@@ -267,14 +285,39 @@ export const LoanModal: React.FC<LoanModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  ที่อยู่ / หมู่บ้านในตำบลธาตุทอง <span className="text-rose-500">*</span>
+                  หมู่บ้านในตำบลธาตุทอง <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedVillage}
+                  onChange={(e) => {
+                    const vName = e.target.value;
+                    setSelectedVillage(vName);
+                    // If address was template or previous village, auto update
+                    if (patientAddress.includes('ต.ธาตุทอง')) {
+                      setPatientAddress(`${vName} ต.ธาตุทอง อ.สว่างแดนดิน จ.สกลนคร`);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-800"
+                >
+                  {THAT_THONG_VILLAGES.map((v) => (
+                    <option key={v.id} value={v.name}>
+                      {v.name}
+                    </option>
+                  ))}
+                  <option value={OTHER_VILLAGE.name}>{OTHER_VILLAGE.name}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  รายละเอียดที่อยู่ (บ้านเลขที่ / ซอย) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={patientAddress}
                   onChange={(e) => setPatientAddress(e.target.value)}
-                  placeholder="บ้านเลขที่ หมู่ที่ บ้าน... ต.ธาตุทอง"
+                  placeholder="เช่น บ้านเลขที่ 12/3 หมู่ 1 บ้านธาตุทอง ต.ธาตุทอง"
                   className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
