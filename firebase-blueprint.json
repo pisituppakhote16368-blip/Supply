@@ -1,0 +1,217 @@
+{
+  "entities": {
+    "Equipment": {
+      "title": "Equipment",
+      "description": "Medical equipment catalog item with unit tracking and borrowing quotas",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for equipment"
+        },
+        "name": {
+          "type": "string",
+          "description": "Equipment name in Thai",
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "description": "Equipment category",
+          "maxLength": 100
+        },
+        "quotaDays": {
+          "type": "number",
+          "description": "Standard borrowing quota period in days"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Photo URL of the equipment",
+          "maxLength": 1000
+        },
+        "description": {
+          "type": "string",
+          "description": "Equipment details and instructions",
+          "maxLength": 1000
+        },
+        "totalUnits": {
+          "type": "number",
+          "description": "Total physical units registered"
+        },
+        "units": {
+          "type": "array",
+          "description": "List of individual physical units"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": ["id", "name", "category", "quotaDays", "totalUnits", "units"]
+    },
+    "BorrowRecord": {
+      "title": "BorrowRecord",
+      "description": "Record of equipment loan to a patient with status and overdue calculations",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for borrow record"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Patient/Borrower full name",
+          "maxLength": 200
+        },
+        "patientIdCard": {
+          "type": "string",
+          "description": "Thai national identification number",
+          "maxLength": 50
+        },
+        "patientPhone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 50
+        },
+        "patientAddress": {
+          "type": "string",
+          "description": "Patient home address or village",
+          "maxLength": 500
+        },
+        "patientPhoto": {
+          "type": "string",
+          "description": "Photo URL or data string of the patient"
+        },
+        "equipmentId": {
+          "type": "string",
+          "description": "Referenced equipment ID"
+        },
+        "equipmentName": {
+          "type": "string",
+          "description": "Name of the borrowed equipment",
+          "maxLength": 200
+        },
+        "unitId": {
+          "type": "string",
+          "description": "Referenced physical unit ID"
+        },
+        "unitNumber": {
+          "type": "number",
+          "description": "Unit sequential number (คัน/ชิ้นที่)"
+        },
+        "assetCode": {
+          "type": "string",
+          "description": "Government asset registration number",
+          "maxLength": 100
+        },
+        "borrowDate": {
+          "type": "string",
+          "description": "Borrow start date YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "quotaDays": {
+          "type": "number",
+          "description": "Allowed quota period in days"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Return due date YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "returnDate": {
+          "type": "string",
+          "description": "Actual return date YYYY-MM-DD or null",
+          "maxLength": 20
+        },
+        "returnedCondition": {
+          "type": "string",
+          "description": "Condition when returned",
+          "maxLength": 200
+        },
+        "returnNote": {
+          "type": "string",
+          "description": "Notes upon return",
+          "maxLength": 500
+        },
+        "receiverStaff": {
+          "type": "string",
+          "description": "Staff member who received the returned equipment",
+          "maxLength": 200
+        },
+        "lenderStaff": {
+          "type": "string",
+          "description": "Staff member who issued the loan",
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "description": "Loan status: active, returned, overdue",
+          "enum": ["active", "returned", "overdue"]
+        },
+        "remarks": {
+          "type": "string",
+          "description": "Additional remarks or diagnosis",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when record was created"
+        }
+      },
+      "required": ["id", "patientName", "patientPhone", "equipmentId", "unitId", "assetCode", "borrowDate", "dueDate", "status"]
+    },
+    "QuotaPolicy": {
+      "title": "QuotaPolicy",
+      "description": "Standard borrowing quota period and rules by equipment category",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Category or policy ID"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category name",
+          "maxLength": 100
+        },
+        "name": {
+          "type": "string",
+          "description": "Equipment type label",
+          "maxLength": 200
+        },
+        "defaultDays": {
+          "type": "number",
+          "description": "Default quota duration in days"
+        },
+        "maxRenewals": {
+          "type": "number",
+          "description": "Maximum number of renewal extensions allowed"
+        },
+        "requirements": {
+          "type": "string",
+          "description": "Required documents or assessments",
+          "maxLength": 500
+        },
+        "description": {
+          "type": "string",
+          "description": "Policy notes and guidance",
+          "maxLength": 500
+        }
+      },
+      "required": ["id", "category", "name", "defaultDays"]
+    }
+  },
+  "firestore": {
+    "/equipments/{equipmentId}": {
+      "schema": "Equipment",
+      "description": "Collection of medical equipment items and their units"
+    },
+    "/borrow_records/{recordId}": {
+      "schema": "BorrowRecord",
+      "description": "Collection of borrowing and return transactions for patients"
+    },
+    "/quota_policies/{policyId}": {
+      "schema": "QuotaPolicy",
+      "description": "Collection of standard borrowing policy guidelines"
+    }
+  }
+}

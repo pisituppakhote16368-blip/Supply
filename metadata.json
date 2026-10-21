@@ -1,0 +1,6 @@
+{
+  "name": "ระบบยืมของ รพ.สต.ธาตุทอง",
+  "description": "ระบบจัดการคลังและยืม-คืนอุปกรณ์ทางการแพทย์และกายอุปกรณ์ โรงพยาบาลส่งเสริมสุขภาพตำบลธาตุทอง",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
