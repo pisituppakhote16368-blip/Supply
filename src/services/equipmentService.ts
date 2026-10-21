@@ -285,6 +285,42 @@ export async function toggleUnitRepairInFirestore(
 }
 
 /**
+ * Updates an existing equipment's general information (name, category, description, quotaDays, imageUrl, etc.)
+ */
+export async function updateEquipmentInFirestore(
+  equipmentId: string,
+  updatedFields: Partial<Equipment>
+): Promise<void> {
+  const path = `${EQUIPMENTS_COLLECTION}/${equipmentId}`;
+  try {
+    await updateDoc(doc(db, EQUIPMENTS_COLLECTION, equipmentId), updatedFields);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+/**
+ * Updates an individual physical unit within an equipment document
+ */
+export async function updateUnitInFirestore(
+  equipmentId: string,
+  currentEquipment: Equipment,
+  updatedUnit: EquipmentUnit
+): Promise<void> {
+  const updatedUnits = currentEquipment.units.map((u) =>
+    u.id === updatedUnit.id ? updatedUnit : u
+  );
+  const path = `${EQUIPMENTS_COLLECTION}/${equipmentId}`;
+  try {
+    await updateDoc(doc(db, EQUIPMENTS_COLLECTION, equipmentId), {
+      units: updatedUnits,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+/**
  * Deletes an entire equipment category/document from Firestore
  */
 export async function deleteEquipmentFromFirestore(equipmentId: string): Promise<void> {

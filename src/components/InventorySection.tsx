@@ -15,7 +15,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Edit3
 } from 'lucide-react';
 import { Equipment, EquipmentUnit } from '../types';
 import { formatThaiDate } from '../utils/dateUtils';
@@ -28,6 +29,8 @@ interface InventorySectionProps {
   onToggleUnitRepair: (equipmentId: string, unitId: string, currentStatus: string) => void;
   onDeleteEquipment?: (equipmentId: string) => void;
   onDeleteUnit?: (equipmentId: string, unitId: string) => void;
+  onOpenEditEquipment?: (equipment: Equipment) => void;
+  onOpenEditUnit?: (equipment: Equipment, unit: EquipmentUnit) => void;
   initialStatusFilter?: 'all' | 'available' | 'borrowed' | 'repair';
 }
 
@@ -39,6 +42,8 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
   onToggleUnitRepair,
   onDeleteEquipment,
   onDeleteUnit,
+  onOpenEditEquipment,
+  onOpenEditUnit,
   initialStatusFilter = 'all',
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'borrowed' | 'repair'>(
@@ -382,6 +387,19 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                     )}
                   </button>
 
+                  {/* แก้ไขข้อมูลครุภัณฑ์ */}
+                  {onOpenEditEquipment && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenEditEquipment(equipment)}
+                      className="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-medium rounded-lg border border-sky-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      title="แก้ไขข้อมูลครุภัณฑ์นี้ (ชื่อ, หมวดหมู่, โควต้า, รายละเอียด, รูปภาพ)"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-sky-600" />
+                      <span>แก้ไขข้อมูล</span>
+                    </button>
+                  )}
+
                   {/* ที่กดลบตัวหลัก (Delete Main Equipment Button) */}
                   <button
                     type="button"
@@ -542,6 +560,19 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                                     className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer mt-0.5"
                                   >
                                     {isRepair ? 'ซ่อมเสร็จแล้ว (เปลี่ยนเป็นพร้อมยืม)' : 'แจ้งส่งซ่อม'}
+                                  </button>
+                                )}
+
+                                {/* แก้ไขข้อมูลชิ้นนี้ (Edit Unit Button) */}
+                                {onOpenEditUnit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onOpenEditUnit(equipment, unit)}
+                                    className="text-[11px] flex items-center gap-1 px-2 py-0.5 rounded transition-colors cursor-pointer mt-0.5 text-sky-700 hover:text-sky-900 hover:bg-sky-50 border border-slate-200 hover:border-sky-300"
+                                    title="แก้ไขข้อมูลชิ้นนี้ (เลขครุภัณฑ์, S/N, สภาพ, วันที่นำเข้า, รูปภาพ)"
+                                  >
+                                    <Edit3 className="w-3 h-3 text-sky-600" />
+                                    <span>แก้ไขชิ้นนี้</span>
                                   </button>
                                 )}
 

@@ -19,6 +19,8 @@ import { LoanModal } from './components/LoanModal';
 import { ReturnModal } from './components/ReturnModal';
 import { AddEquipmentModal } from './components/AddEquipmentModal';
 import { AddUnitModal } from './components/AddUnitModal';
+import { EditEquipmentModal } from './components/EditEquipmentModal';
+import { EditUnitModal } from './components/EditUnitModal';
 import { PrintLoanSlipModal } from './components/PrintLoanSlipModal';
 import { testConnection } from './firebase';
 import { 
@@ -30,6 +32,8 @@ import {
   returnItemTransaction,
   addEquipmentToFirestore,
   addUnitToFirestore,
+  updateEquipmentInFirestore,
+  updateUnitInFirestore,
   toggleUnitRepairInFirestore,
   deleteEquipmentFromFirestore,
   deleteUnitFromFirestore,
@@ -62,6 +66,8 @@ export default function App() {
   const [selectedRecordForPrint, setSelectedRecordForPrint] = useState<BorrowRecord | null>(null);
   const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
   const [equipmentForAddUnit, setEquipmentForAddUnit] = useState<Equipment | null>(null);
+  const [equipmentForEdit, setEquipmentForEdit] = useState<Equipment | null>(null);
+  const [unitForEdit, setUnitForEdit] = useState<{ equipment: Equipment; unit: EquipmentUnit } | null>(null);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -271,6 +277,51 @@ export default function App() {
     }
   };
 
+  // Handler: Save Edit Equipment (Main Item Info)
+  const handleSaveEditEquipment = async (updatedEquipment: Equipment) => {
+    try {
+      await updateEquipmentInFirestore(updatedEquipment.id, {
+        name: updatedEquipment.name,
+        category: updatedEquipment.category,
+        quotaDays: updatedEquipment.quotaDays,
+        description: updatedEquipment.description,
+        imageUrl: updatedEquipment.imageUrl,
+      });
+      setEquipments((prev) =>
+        prev.map((e) => (e.id === updatedEquipment.id ? updatedEquipment : e))
+      );
+      showToast(`บันทึกการแก้ไขครุภัณฑ์ "${updatedEquipment.name}" เรียบร้อยแล้ว`);
+    } catch (e) {
+      console.error('Error saving equipment edit:', e);
+      showToast('เกิดข้อผิดพลาดในการบันทึกการแก้ไขครุภัณฑ์');
+    }
+  };
+
+  // Handler: Save Edit Unit (Physical Unit Details)
+  const handleSaveEditUnit = async (equipmentId: string, updatedUnit: EquipmentUnit) => {
+    const targetEq = equipments.find((e) => e.id === equipmentId);
+    if (!targetEq) return;
+
+    try {
+      await updateUnitInFirestore(equipmentId, targetEq, updatedUnit);
+      setEquipments((prev) =>
+        prev.map((e) => {
+          if (e.id === equipmentId) {
+            return {
+              ...e,
+              units: e.units.map((u) => (u.id === updatedUnit.id ? updatedUnit : u)),
+            };
+          }
+          return e;
+        })
+      );
+      showToast(`บันทึกการแก้ไขชิ้น/คันที่ ${updatedUnit.unitNumber} (${updatedUnit.assetCode}) เรียบร้อย`);
+    } catch (e) {
+      console.error('Error saving unit edit:', e);
+      showToast('เกิดข้อผิดพลาดในการบันทึกการแก้ไขชิ้นอุปกรณ์');
+    }
+  };
+
   // Handler: Quick lend from inventory
   const handleOpenLendFromInventory = (equipment: Equipment, unit: EquipmentUnit) => {
     setPreSelectedEqId(equipment.id);
@@ -378,6 +429,8 @@ export default function App() {
             onToggleUnitRepair={handleToggleUnitRepair}
             onDeleteEquipment={handleDeleteEquipment}
             onDeleteUnit={handleDeleteUnit}
+            onOpenEditEquipment={(eq) => setEquipmentForEdit(eq)}
+            onOpenEditUnit={(eq, u) => setUnitForEdit({ equipment: eq, unit: u })}
             initialStatusFilter={inventoryFilter}
           />
         )}
@@ -438,6 +491,23 @@ export default function App() {
         equipment={equipmentForAddUnit}
         onClose={() => setEquipmentForAddUnit(null)}
         onAddUnit={handleAddUnit}
+      />
+
+      {/* Modal: Edit Equipment (ข้อมูลครุภัณฑ์หลัก) */}
+      <EditEquipmentModal
+        isOpen={!!equipmentForEdit}
+        equipment={equipmentForEdit}
+        onClose={() => setEquipmentForEdit(null)}
+        onSave={handleSaveEditEquipment}
+      />
+
+      {/* Modal: Edit Physical Unit (ข้อมูลชิ้น/คันประจำทะเบียน) */}
+      <EditUnitModal
+        isOpen={!!unitForEdit}
+        equipment={unitForEdit?.equipment || null}
+        unit={unitForEdit?.unit || null}
+        onClose={() => setUnitForEdit(null)}
+        onSave={handleSaveEditUnit}
       />
 
       {/* Modal: Print Loan Slip / Official Form */}
